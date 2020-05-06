@@ -103,7 +103,19 @@ def enum_closure(points: List[Point]):
                     if point_in_triangle(a, b, c, d):
                         points_use[p] = False
 
-    return [point for use, point in zip(points_use, points) if use]
+    @cmp_to_key
+    def cmp(a: Point, b: Point):
+        if a.y < b.y:
+            return -1
+        elif a.y == b.y:
+            return b.x - a.x
+        else:
+            return 1
+
+    points = sorted([point for use, point in zip(points_use, points) if use], key=cmp)
+    points = points[:1] + sorted(points[1:], key=lambda x: (a - points[0]).angle)
+
+    return points
 
 
 def graham_sacn(points: List[Point]):
@@ -152,5 +164,5 @@ if __name__ == '__main__':
     d = Point(x=1, y=1)
     e = Point(x=-1, y=-1)
 
-    # print(enum_closure([a, b, c, d, e]))
+    print(enum_closure([a, b, c, d, e]))
     print(graham_sacn([a, b, c, d, e]))
