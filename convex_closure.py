@@ -1,6 +1,7 @@
 # 凸包算法
 
 from typing import List
+from functools import cmp_to_key
 from collections import namedtuple
 from math import sqrt
 
@@ -30,10 +31,23 @@ class Point(namedtuple('Point', ['x', 'y'])):
             raise NotImplementedError()
 
     def __mul__(self, other) -> float:
+        # 点乘
         if isinstance(other, Point):
             return self.x * other.x + self.y * other.y
         else:
             raise NotImplementedError()
+
+    def __matmul__(self, other):
+        # 叉乘
+        if isinstance(other, Point):
+            return self.x * other.y - other.x * self.y
+        else:
+            raise NotImplementedError()
+
+    @property
+    def angle(self):
+        div = sqrt(self.x ** 2 + self.y ** 2)
+        return (self.y / div) if div > 0 else 0
 
 
 def point_in_triangle(a: Point, b: Point, c: Point, p: Point) -> bool:
@@ -94,12 +108,41 @@ def enum_closure(points: List[Point]):
 
 def graham_sacn(points: List[Point]):
     # Graham扫描算法
-    pass
+    if len(points) <= 3:
+        return points
+
+    @cmp_to_key
+    def cmp(a: Point, b: Point):
+        if a.y < b.y:
+            return -1
+        elif a.y == b.y:
+            return b.x - a.x
+        else:
+            return 1
+
+    points = sorted(points, key=cmp)
+    points = points[:1] + sorted(points[1:], key=lambda x: (a - points[0]).angle)
+
+    i = 1
+    while len(points) > 1:
+        length = len(points)
+        pi_pi1 = points[(i + 1) % length] - points[i % length]
+        pi1_pi2 = points[(i + 2) % length] - points[(i + 1) % length]
+
+        if pi_pi1 @ pi1_pi2 <= 0:
+            points.pop(i % length)
+            continue
+        i += 1
+        if i == len(points):
+            break
+
+    return points
 
 
 def dc(points: List[Point]):
     # 基于分治的凸包求解算法
-    pass
+    if len(points) <= 3:
+        return points
 
 
 if __name__ == '__main__':
@@ -109,4 +152,5 @@ if __name__ == '__main__':
     d = Point(x=1, y=1)
     e = Point(x=-1, y=-1)
 
-    print(enum_closure([a, b, c, d, e]))
+    # print(enum_closure([a, b, c, d, e]))
+    print(graham_sacn([a, b, c, d, e]))
