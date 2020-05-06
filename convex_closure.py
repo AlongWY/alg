@@ -126,8 +126,8 @@ def graham_sacn(points: List[Point]):
     i = 1
     while len(points) > 1:
         length = len(points)
-        pi_pi1 = points[(i + 1) % length] - points[i % length]
-        pi1_pi2 = points[(i + 2) % length] - points[(i + 1) % length]
+        pi_pi1 = points[i % length] - points[(i - 1) % length]
+        pi1_pi2 = points[(i + 1) % length] - points[i % length]
 
         if pi_pi1 @ pi1_pi2 <= 0:
             points.pop(i % length)
