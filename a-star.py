@@ -51,9 +51,8 @@ def a_star(gird, start: Point, end: Point, long, high):
 
     res = []
     links = [
-        Point(-1, -1), Point(0, -1), Point(1, -1),
-        Point(-1, 0), Point(1, 0),
-        Point(-1, 1), Point(0, 1), Point(1, 1),
+        Point(0, -1), Point(0, 1), Point(-1, 0), Point(1, 0),
+        Point(-1, -1), Point(1, -1), Point(-1, 1), Point(1, 1),
     ]
 
     open_set.put(Position(start.x, start.y, 0, 0))
@@ -66,7 +65,7 @@ def a_star(gird, start: Point, end: Point, long, high):
                 res.append(current)
                 current = current.parent
             break
-        for link in links:
+        for idx, link in enumerate(links):
             point = current + link
             if point in close_set:
                 continue
@@ -77,7 +76,11 @@ def a_star(gird, start: Point, end: Point, long, high):
                     continue
                 if y < 0 or y > high - 1:
                     continue
-                position = Position(x, y, current.g + gird[y][x], heuristic(point), current)
+                if gird[y][x] < 0:
+                    continue
+
+                cost = current.g + gird[y][x] + (1 if idx < 4 else sqrt_2)
+                position = Position(x, y, cost, heuristic(point), current)
                 open_set.put(position)
 
     return res
@@ -87,11 +90,11 @@ def main():
     # x: 0 --- 8  9
     # y: 0 --- 5  6
     map = [
-        [1, 10, 10, 10, 10, 10, 10, 10, 10],
-        [10, 1, 10, 10, 10, 10, 10, 10, 10],
-        [10, 10, 1, 10, 10, 10, 10, 10, 10],
-        [10, 10, 10, 1, 10, 10, 10, 10, 10],
-        [10, 10, 10, 10, 2, 10, 10, 10, 10],
+        [1, 10, 10, 10, -1, 10, 10, 10, 10],
+        [10, 1, 10, 10, -1, 10, 10, 10, 10],
+        [10, 10, 1, 10, -1, 10, 10, 10, 10],
+        [10, 10, 10, 1, -1, 10, 10, 10, 10],
+        [10, 10, 10, 10, -1, 10, 10, 10, 10],
         [10, 10, 10, 10, 10, 1, 1, 1, 1],
     ]
 
