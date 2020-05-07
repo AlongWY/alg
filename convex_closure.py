@@ -114,7 +114,7 @@ def enum_closure(points: List[Point]):
                         points_use[p] = False
 
     points = sorted([point for use, point in zip(points_use, points) if use], key=cmp)
-    points = points[:1] + sorted(points[1:], key=lambda x: (a - points[0]).angle)
+    points = points[:1] + sorted(points[1:], key=lambda x: (x - points[0]).angle)
 
     return points
 
@@ -125,7 +125,7 @@ def graham_sacn(points: List[Point]):
         return points
 
     points = sorted(points, key=cmp)
-    points = points[:1] + sorted(points[1:], key=lambda x: (a - points[0]).angle)
+    points = points[:1] + sorted(points[1:], key=lambda x: (x - points[0]).angle)
 
     i = 1
     while len(points) > 1:
@@ -147,7 +147,7 @@ def dc(points: List[Point]):
     # 基于分治的凸包求解算法
     if len(points) <= 3:
         points = sorted(points, key=cmp)
-        points = points[:1] + sorted(points[1:], key=lambda x: (a - points[0]).angle)
+        points = points[:1] + sorted(points[1:], key=lambda x: (x - points[0]).angle)
         return points
 
     points = sorted(points, key=lambda x: x.x)
@@ -208,7 +208,7 @@ def dc(points: List[Point]):
            [right[i % right_size] for i in range(down_right, up_right + right_size + (down_right != up_right))]
 
 
-if __name__ == '__main__':
+def main():
     a = Point(x=0, y=0)
     b = Point(x=1, y=0)
     c = Point(x=0, y=1)
@@ -218,3 +218,7 @@ if __name__ == '__main__':
     print(enum_closure([a, b, c, d, e]))
     print(graham_sacn([a, b, c, d, e]))
     print(dc([a, b, c, d, e]))
+
+
+if __name__ == '__main__':
+    main()
