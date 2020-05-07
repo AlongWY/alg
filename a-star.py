@@ -58,6 +58,8 @@ def a_star(gird, start: Point, end: Point, long, high):
     open_set.put(Position(start.x, start.y, 0, 0))
     while not open_set.empty():
         current = open_set.get()
+        if current in close_set:
+            continue
         close_set.add(current)
 
         if current == end:
@@ -95,7 +97,7 @@ def main():
         [10, 10, 1, 10, -1, 10, 10, 10, 10],
         [10, 10, 10, 1, -1, 10, 10, 10, 10],
         [10, 10, 10, 10, -1, 10, 10, 10, 10],
-        [10, 10, 10, 10, 10, 1, 1, 1, 1],
+        [10, 10, 10, 10, -1, 1, 1, 1, 1],
     ]
 
     print(a_star(map, Point(0, 0), Point(8, 5), 9, 6))
