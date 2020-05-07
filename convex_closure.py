@@ -162,54 +162,50 @@ def dc(points: List[Point]):
     right_most_left = right.index(min(right, key=lambda r: r.x))
 
     # up support line
-    up_left_index = left_most_right
-    up_right_index = right_most_left
+    up_left = left_most_right
+    up_right = right_most_left
     while True:
-        support_line = right[up_right_index] - left[up_left_index]
+        support_line = right[up_right] - left[up_left]
 
-        right_forward = right[(up_right_index + 1) % right_size] - left[up_left_index]
-        right_backword = right[(up_right_index - 1) % right_size] - left[up_left_index]
+        right_forward = right[(up_right + 1) % right_size] - left[up_left]
+        right_backword = right[(up_right - 1) % right_size] - left[up_left]
 
         if ((support_line @ right_forward) * (support_line @ right_backword)) < 0:
-            up_right_index = (up_right_index - 1) % right_size
+            up_right = (up_right - 1) % right_size
             continue
 
-        left_forward = left[(up_left_index + 1) % left_size]
-        left_backword = left[(up_left_index - 1) % left_size]
+        left_forward = left[(up_left + 1) % left_size]
+        left_backword = left[(up_left - 1) % left_size]
 
         if ((support_line @ left_forward) * (support_line @ left_backword)) < 0:
-            up_left_index = (up_left_index + 1) % left_size
+            up_left = (up_left + 1) % left_size
             continue
         break
 
     # down support line
-    down_left_index = left_most_right
-    down_right_index = right_most_left
+    down_left = left_most_right
+    down_right = right_most_left
 
     while True:
-        support_line = right[down_right_index] - left[down_left_index]
+        support_line = right[down_right] - left[down_left]
 
-        right_forward = right[(down_right_index + 1) % right_size] - left[down_left_index]
-        right_backword = right[(down_right_index - 1) % right_size] - left[down_left_index]
+        right_forward = right[(down_right + 1) % right_size] - left[down_left]
+        right_backword = right[(down_right - 1) % right_size] - left[down_left]
 
         if ((support_line @ right_forward) * (support_line @ right_backword)) < 0:
-            down_right_index = (down_right_index + 1) % right_size
+            down_right = (down_right + 1) % right_size
             continue
 
-        left_forward = left[(down_left_index + 1) % left_size]
-        left_backword = left[(down_left_index - 1) % left_size]
+        left_forward = left[(down_left + 1) % left_size]
+        left_backword = left[(down_left - 1) % left_size]
 
         if ((support_line @ left_forward) * (support_line @ left_backword)) < 0:
-            down_left_index = (down_left_index - 1) % left_size
+            down_left = (down_left - 1) % left_size
             continue
         break
 
-    left_peak = [left[i % left_size] for i in
-                 range(up_left_index, down_left_index + left_size + (down_left_index != up_left_index))]
-    right_peak = [right[i % right_size] for i in
-                  range(down_right_index, up_right_index + right_size + (down_right_index != up_right_index))]
-
-    return left_peak + right_peak
+    return [left[i % left_size] for i in range(up_left, down_left + left_size + (down_left != up_left))] + \
+           [right[i % right_size] for i in range(down_right, up_right + right_size + (down_right != up_right))]
 
 
 if __name__ == '__main__':
