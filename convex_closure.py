@@ -79,6 +79,16 @@ def point_in_triangle(a: Point, b: Point, c: Point, p: Point) -> bool:
     return u + v <= 1
 
 
+@cmp_to_key
+def cmp(a: Point, b: Point):
+    if a.y < b.y:
+        return -1
+    elif a.y == b.y:
+        return b.x - a.x
+    else:
+        return 1
+
+
 def enum_closure(points: List[Point]):
     # 基于枚举的凸包求解算法
     if len(points) <= 3:
@@ -103,15 +113,6 @@ def enum_closure(points: List[Point]):
                     if point_in_triangle(a, b, c, d):
                         points_use[p] = False
 
-    @cmp_to_key
-    def cmp(a: Point, b: Point):
-        if a.y < b.y:
-            return -1
-        elif a.y == b.y:
-            return b.x - a.x
-        else:
-            return 1
-
     points = sorted([point for use, point in zip(points_use, points) if use], key=cmp)
     points = points[:1] + sorted(points[1:], key=lambda x: (a - points[0]).angle)
 
@@ -122,15 +123,6 @@ def graham_sacn(points: List[Point]):
     # Graham扫描算法
     if len(points) <= 3:
         return points
-
-    @cmp_to_key
-    def cmp(a: Point, b: Point):
-        if a.y < b.y:
-            return -1
-        elif a.y == b.y:
-            return b.x - a.x
-        else:
-            return 1
 
     points = sorted(points, key=cmp)
     points = points[:1] + sorted(points[1:], key=lambda x: (a - points[0]).angle)
@@ -154,7 +146,70 @@ def graham_sacn(points: List[Point]):
 def dc(points: List[Point]):
     # 基于分治的凸包求解算法
     if len(points) <= 3:
+        points = sorted(points, key=cmp)
+        points = points[:1] + sorted(points[1:], key=lambda x: (a - points[0]).angle)
         return points
+
+    points = sorted(points, key=lambda x: x.x)
+    middle = len(points) // 2 + 1
+    left = dc(points[:middle])
+    right = dc(points[middle:])
+
+    left_size = len(left)
+    right_size = len(right)
+
+    left_most_right = left.index(max(left, key=lambda l: l.x))
+    right_most_left = right.index(min(right, key=lambda r: r.x))
+
+    # up support line
+    up_left_index = left_most_right
+    up_right_index = right_most_left
+    while True:
+        support_line = right[up_right_index] - left[up_left_index]
+
+        right_forward = right[(up_right_index + 1) % right_size] - left[up_left_index]
+        right_backword = right[(up_right_index - 1) % right_size] - left[up_left_index]
+
+        if ((support_line @ right_forward) * (support_line @ right_backword)) < 0:
+            up_right_index = (up_right_index - 1) % right_size
+            continue
+
+        left_forward = left[(up_left_index + 1) % left_size]
+        left_backword = left[(up_left_index - 1) % left_size]
+
+        if ((support_line @ left_forward) * (support_line @ left_backword)) < 0:
+            up_left_index = (up_left_index + 1) % left_size
+            continue
+        break
+
+    # down support line
+    down_left_index = left_most_right
+    down_right_index = right_most_left
+
+    while True:
+        support_line = right[down_right_index] - left[down_left_index]
+
+        right_forward = right[(down_right_index + 1) % right_size] - left[down_left_index]
+        right_backword = right[(down_right_index - 1) % right_size] - left[down_left_index]
+
+        if ((support_line @ right_forward) * (support_line @ right_backword)) < 0:
+            down_right_index = (down_right_index + 1) % right_size
+            continue
+
+        left_forward = left[(down_left_index + 1) % left_size]
+        left_backword = left[(down_left_index - 1) % left_size]
+
+        if ((support_line @ left_forward) * (support_line @ left_backword)) < 0:
+            down_left_index = (down_left_index - 1) % left_size
+            continue
+        break
+
+    left_peak = [left[i % left_size] for i in
+                 range(up_left_index, down_left_index + left_size + (down_left_index != up_left_index))]
+    right_peak = [right[i % right_size] for i in
+                  range(down_right_index, up_right_index + right_size + (down_right_index != up_right_index))]
+
+    return left_peak + right_peak
 
 
 if __name__ == '__main__':
@@ -166,3 +221,4 @@ if __name__ == '__main__':
 
     print(enum_closure([a, b, c, d, e]))
     print(graham_sacn([a, b, c, d, e]))
+    print(dc([a, b, c, d, e]))
