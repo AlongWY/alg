@@ -8,15 +8,15 @@ Point = namedtuple('Point', ['x', 'y'])
 class PriorityQueue(queue.PriorityQueue):
     def _init(self, maxsize):
         super(PriorityQueue, self)._init(maxsize)
-        self.set = {}
+        self.dict = {}
 
     def _put(self, item):
         super(PriorityQueue, self)._put(item)
-        self.set[item] = item
+        self.dict[item] = item
 
     def _get(self):
         item = super(PriorityQueue, self)._get()
-        self.set.pop(item)
+        self.dict.pop(item)
         return item
 
 
@@ -123,13 +123,17 @@ def double_a_star(start: Point, end: Point, gird, long, high):
     middle = None
 
     def check(forward_open_set, backward_open_set):
+        min_cost = float("inf")
+        middle = None
         for item in forward_open_set.queue:
-            if item in backward_open_set.set:
-                return item, backward_open_set.set[item]
+            if item in backward_open_set.dict:
+                if item.g + backward_open_set.dict[item].g < min_cost:
+                    middle = item, backward_open_set.dict[item]
+        return middle
 
     while (not forward_open_set.empty()) and (not backward_open_set.empty()) and (middle is None):
         a_star_step(forward_open_set, forward_close_set, forward_res, end, gird, long, high)
-        middle = check(forward_open_set,backward_open_set)
+        middle = check(forward_open_set, backward_open_set)
         if middle:
             break
         a_star_step(backward_open_set, backward_close_set, backward_res, start, gird, long, high)
