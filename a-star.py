@@ -29,7 +29,7 @@ class Position(object):
         return hash(f"{self.x},{self.y}")
 
     def __repr__(self):
-        return f"({self.x},{self.y},f={self.g})"
+        return f"({self.x},{self.y})"
 
     def __eq__(self, other):
         if (not isinstance(other, Position)) and (not isinstance(other, Point)):
@@ -52,13 +52,13 @@ def heuristic(p, q):
     return (dx + dy) + (sqrt_2 - 2) * min(dx, dy)
 
 
-def a_star_step(open_set: PriorityQueue, close_set: set, gird, res, end, long, high):
+def a_star_step(open_set: PriorityQueue, close_set: set, res, target, gird, long, high):
     current = open_set.get()
     if current in close_set:
         return
     close_set.add(current)
 
-    if current == end:
+    if current == target:
         while current is not None:
             res.append(current)
             current = current.parent
@@ -78,19 +78,58 @@ def a_star_step(open_set: PriorityQueue, close_set: set, gird, res, end, long, h
                 continue
 
             cost = current.g + gird[y][x] + (1 if idx < 4 else sqrt_2)
-            position = Position(x, y, cost, heuristic(point, end), current)
+            position = Position(x, y, cost, heuristic(point, target), current)
             open_set.put(position)
 
 
-def a_star(gird, start: Point, end: Point, long, high):
+def a_star(start: Point, end: Point, gird, long, high):
     open_set = PriorityQueue()
     close_set = set()
     res = []
     open_set.put(Position(start.x, start.y, 0, 0))
-    while not open_set.empty():
-        a_star_step(open_set, close_set, gird, res, end, long, high)
+    while not open_set.empty() and not len(res):
+        a_star_step(open_set, close_set, res, end, gird, long, high)
 
-    return res
+    return res, res[0].g
+
+
+def double_a_star(start: Point, end: Point, gird, long, high):
+    forward_open_set = PriorityQueue()
+    forward_close_set = set()
+    backward_open_set = PriorityQueue()
+    backward_close_set = set()
+
+    forward_res = []
+    forward_open_set.put(Position(start.x, start.y, 0, 0))
+
+    backward_res = []
+    backward_open_set.put(Position(end.x, end.y, gird[end.y][end.x], 0))  # 自带地形代价
+
+    middle = None
+    while (not forward_open_set.empty()) and (not backward_open_set.empty()) and (middle is None):
+        a_star_step(forward_open_set, forward_close_set, forward_res, end, gird, long, high)
+        a_star_step(backward_open_set, backward_close_set, backward_res, start, gird, long, high)
+
+        for item in forward_open_set.queue:
+            try:
+                index = backward_open_set.queue.index(item)
+                middle = item, backward_open_set.queue[index]
+                break
+            except Exception as e:
+                continue
+    forward, backword = middle
+    res = []
+
+    while forward is not None:
+        res.append(forward)
+        forward = forward.parent
+
+    while backword is not None:
+        backword = backword.parent
+        if backword is not None:
+            res.insert(0, backword)
+
+    return res, middle[0].g + middle[1].g - gird[middle[0].y][middle[0].x]
 
 
 def main():
@@ -105,7 +144,8 @@ def main():
         [10, 10, 10, 10, 10, 1, 1, 1, 1],
     ]
 
-    print(a_star(map, Point(0, 0), Point(8, 5), 9, 6))
+    print(a_star(Point(0, 0), Point(8, 5), map, 9, 6))
+    print(double_a_star(Point(0, 0), Point(8, 5), map, 9, 6))
 
 
 if __name__ == '__main__':
