@@ -37,53 +37,58 @@ class Position(object):
         return self.x == other.x and self.y == other.y
 
 
+sqrt_2 = sqrt(2)
+
+links = [
+    Point(0, -1), Point(0, 1), Point(-1, 0), Point(1, 0),
+    Point(-1, -1), Point(1, -1), Point(-1, 1), Point(1, 1),
+]
+
+
+# 对角距离
+def heuristic(p, q):
+    dx = abs(p.x - q.x)
+    dy = abs(p.y - q.y)
+    return (dx + dy) + (sqrt_2 - 2) * min(dx, dy)
+
+
+def a_star_step(open_set: PriorityQueue, close_set: set, gird, res, end, long, high):
+    current = open_set.get()
+    if current in close_set:
+        return
+    close_set.add(current)
+
+    if current == end:
+        while current is not None:
+            res.append(current)
+            current = current.parent
+        return
+    for idx, link in enumerate(links):
+        point = current + link
+        if point in close_set:
+            continue
+
+        if point not in open_set.queue:
+            x, y = point
+            if x < 0 or x > long - 1:
+                continue
+            if y < 0 or y > high - 1:
+                continue
+            if gird[y][x] < 0:
+                continue
+
+            cost = current.g + gird[y][x] + (1 if idx < 4 else sqrt_2)
+            position = Position(x, y, cost, heuristic(point, end), current)
+            open_set.put(position)
+
+
 def a_star(gird, start: Point, end: Point, long, high):
     open_set = PriorityQueue()
     close_set = set()
-
-    sqrt_2 = sqrt(2)
-
-    # 对角距离
-    def heuristic(p):
-        dx = abs(p.x - end.x)
-        dy = abs(p.y - end.y)
-        return (dx + dy) + (sqrt_2 - 2) * min(dx, dy)
-
     res = []
-    links = [
-        Point(0, -1), Point(0, 1), Point(-1, 0), Point(1, 0),
-        Point(-1, -1), Point(1, -1), Point(-1, 1), Point(1, 1),
-    ]
-
     open_set.put(Position(start.x, start.y, 0, 0))
     while not open_set.empty():
-        current = open_set.get()
-        if current in close_set:
-            continue
-        close_set.add(current)
-
-        if current == end:
-            while current is not None:
-                res.append(current)
-                current = current.parent
-            break
-        for idx, link in enumerate(links):
-            point = current + link
-            if point in close_set:
-                continue
-
-            if point not in open_set.queue:
-                x, y = point
-                if x < 0 or x > long - 1:
-                    continue
-                if y < 0 or y > high - 1:
-                    continue
-                if gird[y][x] < 0:
-                    continue
-
-                cost = current.g + gird[y][x] + (1 if idx < 4 else sqrt_2)
-                position = Position(x, y, cost, heuristic(point), current)
-                open_set.put(position)
+        a_star_step(open_set, close_set, gird, res, end, long, high)
 
     return res
 
