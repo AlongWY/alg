@@ -164,7 +164,6 @@ def relative(a, b, c):
 def dc(points: List[Point]):
     # 基于分治的凸包求解算法
     if len(points) <= 3:
-        return points
         points = sorted(points, key=cmp)
         return points[:1] + sorted(points[1:], key=lambda x: (x - points[0]).angle)
 
