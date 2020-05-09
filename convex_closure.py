@@ -156,12 +156,17 @@ def graham_sacn(points: List[Point]):
     return points
 
 
+def relative(a, b, c):
+    # a --> b
+    return (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x)
+
+
 def dc(points: List[Point]):
     # 基于分治的凸包求解算法
     if len(points) <= 3:
-        points = sorted(points, key=cmp)
-        points = points[:1] + sorted(points[1:], key=lambda x: (x - points[0]).angle)
         return points
+        points = sorted(points, key=cmp)
+        return points[:1] + sorted(points[1:], key=lambda x: (x - points[0]).angle)
 
     points = sorted(points, key=lambda x: x.x)
     middle = len(points) // 2
@@ -179,19 +184,23 @@ def dc(points: List[Point]):
     left_up = left_most_right
     right_up = right_most_left
     while True:
-        support_line = right[right_up] - left[left_up]
+        # plt.title('up support line')
+        # plt.plot(*zip(*left))
+        # plt.plot(*zip(*right))
+        # plt.scatter([left[left_up].x, right[right_up].x], [left[left_up].y, right[right_up].y])
+        # plt.show()
 
-        right_forward = right[(right_up + 1) % right_size] - left[left_up]
-        right_backword = right[(right_up - 1) % right_size] - left[left_up]
-
-        if ((support_line @ right_forward) * (support_line @ right_backword)) < 0:
+        right_forward = right[(right_up + 1) % right_size]
+        right_backword = right[(right_up - 1) % right_size]
+        if not (relative(left[left_up], right[right_up], right_forward) <= 0
+                and relative(left[left_up], right[right_up], right_backword) <= 0):
             right_up = (right_up - 1) % right_size
             continue
 
-        left_forward = right[right_up] - left[(left_up + 1) % left_size]
-        left_backword = right[right_up] - left[(left_up - 1) % left_size]
-
-        if ((support_line @ left_forward) * (support_line @ left_backword)) < 0:
+        left_forward = left[(left_up + 1) % left_size]
+        left_backword = left[(left_up - 1) % left_size]
+        if not (relative(left[left_up], right[right_up], left_forward) <= 0 and
+                relative(left[left_up], right[right_up], left_backword) <= 0):
             left_up = (left_up + 1) % left_size
             continue
         break
@@ -201,42 +210,48 @@ def dc(points: List[Point]):
     right_down = right_most_left
 
     while True:
-        support_line = left[left_down] - right[right_down]
+        # plt.title('down support line')
+        # plt.plot(*zip(*left))
+        # plt.plot(*zip(*right))
+        # plt.scatter([left[left_down].x, right[right_down].x], [left[left_down].y, right[right_down].y])
+        # plt.show()
 
-        left_forward = left[(left_down + 1) % left_size] - right[right_down]
-        left_backword = left[(left_down - 1) % left_size] - right[right_down]
-
-        if ((support_line @ left_forward) * (support_line @ left_backword)) < 0:
+        left_forward = left[(left_down + 1) % left_size]
+        left_backword = left[(left_down - 1) % left_size]
+        if not (relative(left[left_down], right[right_down], left_forward) >= 0 and
+                relative(left[left_down], right[right_down], left_backword) >= 0):
             left_down = (left_down - 1) % left_size
             continue
 
-        right_forward = left[left_down] - right[(right_down + 1) % right_size]
-        right_backword = left[left_down] - right[(right_down - 1) % right_size]
-
-        if ((support_line @ right_forward) * (support_line @ right_backword)) < 0:
+        right_forward = right[(right_down + 1) % right_size]
+        right_backword = right[(right_down - 1) % right_size]
+        if not (relative(left[left_down], right[right_down], right_forward) >= 0
+                and relative(left[left_down], right[right_down], right_backword) >= 0):
             right_down = (right_down + 1) % right_size
             continue
-
         break
 
-    res = []
-    res.append(left[left_up])
-    left_up = (left_up + 1) % left_size
-    while left_up != left_down:
-        res.append(left[left_up])
-        left_up = (left_up + 1) % left_size
+    points = []
+    for i in range(left_up, left_up + left_size):
+        points.append(left[i % left_size])
+        if i % left_size == left_down:
+            break
+    for i in range(right_down, right_down + right_size):
+        points.append(right[i % right_size])
+        if i % right_size == right_up:
+            break
 
-    res.append(right[right_down])
-    right_down = (right_down + 1) % right_size
-    while right_down != right_up:
-        res.append(right[right_down])
-        right_down = (right_down + 1) % right_size
+    # plt.title('combine')
+    # plt.scatter(*zip(*left))
+    # plt.scatter(*zip(*right))
+    # plt.plot(*zip(*points))
+    # plt.show()
 
-    return res
+    return points
 
 
 def main():
-    points_mat = np.random.randint(0, 101, size=(5, 2))
+    points_mat = np.random.randint(0, 101, size=(10, 2))
     points = [Point(x=x, y=y) for x, y in points_mat.tolist()]
 
     # enum_res = enum_closure(points)
@@ -253,12 +268,12 @@ def main():
     plt.plot(x, y)
     plt.show()
 
-    graham_res = graham_sacn(points)
-    x, y = zip(*graham_res)
-    plt.title('graham_fix')
-    plt.scatter(points_mat[:, 0], points_mat[:, 1])
-    plt.plot(x, y)
-    plt.show()
+    # graham_res = graham_sacn(points)
+    # x, y = zip(*graham_res)
+    # plt.title('graham_fix')
+    # plt.scatter(points_mat[:, 0], points_mat[:, 1])
+    # plt.plot(x, y)
+    # plt.show()
 
 
 if __name__ == '__main__':
