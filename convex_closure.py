@@ -184,12 +184,6 @@ def dc(points: List[Point]):
     left_up = left_most_right
     right_up = right_most_left
     while True:
-        # plt.title('up support line')
-        # plt.plot(*zip(*left))
-        # plt.plot(*zip(*right))
-        # plt.scatter([left[left_up].x, right[right_up].x], [left[left_up].y, right[right_up].y])
-        # plt.show()
-
         right_forward = right[(right_up + 1) % right_size]
         right_backword = right[(right_up - 1) % right_size]
         if not (relative(left[left_up], right[right_up], right_forward) <= 0
@@ -210,12 +204,6 @@ def dc(points: List[Point]):
     right_down = right_most_left
 
     while True:
-        # plt.title('down support line')
-        # plt.plot(*zip(*left))
-        # plt.plot(*zip(*right))
-        # plt.scatter([left[left_down].x, right[right_down].x], [left[left_down].y, right[right_down].y])
-        # plt.show()
-
         left_forward = left[(left_down + 1) % left_size]
         left_backword = left[(left_down - 1) % left_size]
         if not (relative(left[left_down], right[right_down], left_forward) >= 0 and
@@ -240,13 +228,6 @@ def dc(points: List[Point]):
         points.append(right[i % right_size])
         if i % right_size == right_up:
             break
-
-    # plt.title('combine')
-    # plt.scatter(*zip(*left))
-    # plt.scatter(*zip(*right))
-    # plt.plot(*zip(*points))
-    # plt.show()
-
     return points
 
 
@@ -254,12 +235,12 @@ def main():
     points_mat = np.random.randint(0, 101, size=(10, 2))
     points = [Point(x=x, y=y) for x, y in points_mat.tolist()]
 
-    # enum_res = enum_closure(points)
-    # x, y = zip(*enum_res)
-    # plt.title('enum')
-    # plt.scatter(points_mat[:, 0], points_mat[:, 1])
-    # plt.plot(x, y)
-    # plt.show()
+    enum_res = enum_closure(points)
+    x, y = zip(*enum_res)
+    plt.title('enum')
+    plt.scatter(points_mat[:, 0], points_mat[:, 1])
+    plt.plot(x, y)
+    plt.show()
 
     dc_res = dc(points)
     x, y = zip(*dc_res)
@@ -268,12 +249,12 @@ def main():
     plt.plot(x, y)
     plt.show()
 
-    # graham_res = graham_sacn(points)
-    # x, y = zip(*graham_res)
-    # plt.title('graham_fix')
-    # plt.scatter(points_mat[:, 0], points_mat[:, 1])
-    # plt.plot(x, y)
-    # plt.show()
+    graham_res = graham_sacn(points)
+    x, y = zip(*graham_res)
+    plt.title('graham_fix')
+    plt.scatter(points_mat[:, 0], points_mat[:, 1])
+    plt.plot(x, y)
+    plt.show()
 
 
 if __name__ == '__main__':
