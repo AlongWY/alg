@@ -180,21 +180,23 @@ def dc(points: List[Point]):
     left_most_right = left.index(max(left, key=lambda l: l.x))
     right_most_left = right.index(min(right, key=lambda r: r.x))
 
+    # fixme 当出现竖直的直线时，将会出现处理错误
+
     # up support line
     left_up = left_most_right
     right_up = right_most_left
     while True:
         right_forward = right[(right_up + 1) % right_size]
         right_backword = right[(right_up - 1) % right_size]
-        if not (relative(left[left_up], right[right_up], right_forward) <= 0
-                and relative(left[left_up], right[right_up], right_backword) <= 0):
+        if not (relative(left[left_up], right[right_up], right_forward) < 0
+                and relative(left[left_up], right[right_up], right_backword) < 0):
             right_up = (right_up - 1) % right_size
             continue
 
         left_forward = left[(left_up + 1) % left_size]
         left_backword = left[(left_up - 1) % left_size]
-        if not (relative(left[left_up], right[right_up], left_forward) <= 0 and
-                relative(left[left_up], right[right_up], left_backword) <= 0):
+        if not (relative(left[left_up], right[right_up], left_forward) < 0 and
+                relative(left[left_up], right[right_up], left_backword) < 0):
             left_up = (left_up + 1) % left_size
             continue
         break
@@ -206,15 +208,15 @@ def dc(points: List[Point]):
     while True:
         left_forward = left[(left_down + 1) % left_size]
         left_backword = left[(left_down - 1) % left_size]
-        if not (relative(left[left_down], right[right_down], left_forward) >= 0 and
-                relative(left[left_down], right[right_down], left_backword) >= 0):
+        if not (relative(left[left_down], right[right_down], left_forward) > 0 and
+                relative(left[left_down], right[right_down], left_backword) > 0):
             left_down = (left_down - 1) % left_size
             continue
 
         right_forward = right[(right_down + 1) % right_size]
         right_backword = right[(right_down - 1) % right_size]
-        if not (relative(left[left_down], right[right_down], right_forward) >= 0
-                and relative(left[left_down], right[right_down], right_backword) >= 0):
+        if not (relative(left[left_down], right[right_down], right_forward) > 0
+                and relative(left[left_down], right[right_down], right_backword) > 0):
             right_down = (right_down + 1) % right_size
             continue
         break
@@ -232,15 +234,15 @@ def dc(points: List[Point]):
 
 
 def main():
-    points_mat = np.random.randint(0, 101, size=(10, 2))
+    points_mat = np.random.randint(0, 101, size=(1000, 2))
     points = [Point(x=x, y=y) for x, y in points_mat.tolist()]
 
-    enum_res = enum_closure(points)
-    x, y = zip(*enum_res)
-    plt.title('enum')
-    plt.scatter(points_mat[:, 0], points_mat[:, 1])
-    plt.plot(x, y)
-    plt.show()
+    # enum_res = enum_closure(points)
+    # x, y = zip(*enum_res)
+    # plt.title('enum')
+    # plt.scatter(points_mat[:, 0], points_mat[:, 1])
+    # plt.plot(x, y)
+    # plt.show()
 
     dc_res = dc(points)
     x, y = zip(*dc_res)
@@ -249,12 +251,12 @@ def main():
     plt.plot(x, y)
     plt.show()
 
-    graham_res = graham_sacn(points)
-    x, y = zip(*graham_res)
-    plt.title('graham_fix')
-    plt.scatter(points_mat[:, 0], points_mat[:, 1])
-    plt.plot(x, y)
-    plt.show()
+    # graham_res = graham_sacn(points)
+    # x, y = zip(*graham_res)
+    # plt.title('graham_fix')
+    # plt.scatter(points_mat[:, 0], points_mat[:, 1])
+    # plt.plot(x, y)
+    # plt.show()
 
 
 if __name__ == '__main__':
