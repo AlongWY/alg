@@ -96,27 +96,30 @@ def enum_closure(points: List[Point]):
 
     points_num = len(points)
     points_use = [True] * points_num
-    for i in range(points_num):
-        for j in range(i + 1, points_num):
-            for k in range(j + 1, points_num):
-                for p in range(k + 1, points_num):
-                    a = points[i]
-                    b = points[j]
-                    c = points[k]
-                    d = points[p]
-                    if point_in_triangle(b, c, d, a):
-                        points_use[i] = False
-                    if point_in_triangle(a, c, d, b):
-                        points_use[j] = False
-                    if point_in_triangle(a, b, d, c):
-                        points_use[k] = False
-                    if point_in_triangle(a, b, c, d):
-                        points_use[p] = False
-
-    points = sorted([point for use, point in zip(points_use, points) if use], key=cmp)
+    points = sorted(points, key=cmp)
     points = points[:1] + sorted(points[1:], key=lambda x: (x - points[0]).angle)
 
-    return points
+    a = points[0]
+    for i in range(1, points_num):
+        if not points_use[i]:
+            continue
+        for j in range(i + 1, points_num):
+            if not points_use[j]:
+                continue
+            for k in range(j + 1, points_num):
+                if not points_use[k]:
+                    continue
+                b = points[i]
+                c = points[j]
+                d = points[k]
+                if point_in_triangle(a, c, d, b):
+                    points_use[i] = False
+                if point_in_triangle(a, b, d, c):
+                    points_use[j] = False
+                if point_in_triangle(a, b, c, d):
+                    points_use[k] = False
+
+    return [point for use, point in zip(points_use, points) if use]
 
 
 def graham_sacn(points: List[Point]):
