@@ -3,7 +3,9 @@
 from typing import List
 from functools import cmp_to_key
 from collections import namedtuple
-from math import sqrt
+from math import sqrt, acos, atan2
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 class Point(namedtuple('Point', ['x', 'y'])):
@@ -44,10 +46,15 @@ class Point(namedtuple('Point', ['x', 'y'])):
         else:
             raise NotImplementedError()
 
+    def __neg__(self):
+        return Point(-self.x, -self.y)
+
+    def __pos__(self):
+        return self
+
     @property
     def angle(self):
-        div = sqrt(self.x ** 2 + self.y ** 2)
-        return (self.y / div) if div > 0 else 0
+        return atan2(self.y, self.x)
 
 
 def point_in_triangle(a: Point, b: Point, c: Point, p: Point) -> bool:
@@ -96,8 +103,6 @@ def enum_closure(points: List[Point]):
 
     points_num = len(points)
     points_use = [True] * points_num
-    points = sorted(points, key=cmp)
-    points = points[:1] + sorted(points[1:], key=lambda x: (x - points[0]).angle)
 
     a = points[0]
     for i in range(1, points_num):
@@ -112,6 +117,8 @@ def enum_closure(points: List[Point]):
                 b = points[i]
                 c = points[j]
                 d = points[k]
+                if point_in_triangle(b, c, d, a):
+                    points_use[0] = False
                 if point_in_triangle(a, c, d, b):
                     points_use[i] = False
                 if point_in_triangle(a, b, d, c):
@@ -119,7 +126,9 @@ def enum_closure(points: List[Point]):
                 if point_in_triangle(a, b, c, d):
                     points_use[k] = False
 
-    return [point for use, point in zip(points_use, points) if use]
+    points = sorted([point for use, point in zip(points_use, points) if use], key=cmp)
+    points = points[:1] + sorted(points[1:], key=lambda x: (x - points[0]).angle)
+    return points
 
 
 def graham_sacn(points: List[Point]):
@@ -138,6 +147,7 @@ def graham_sacn(points: List[Point]):
 
         if pi_pi1 @ pi1_pi2 <= 0:
             points.pop(i % length)
+            i -= 1
             continue
         i += 1
         if i == len(points):
@@ -154,7 +164,8 @@ def dc(points: List[Point]):
         return points
 
     points = sorted(points, key=lambda x: x.x)
-    middle = len(points) // 2 + 1
+    middle = len(points) // 2
+
     left = dc(points[:middle])
     right = dc(points[middle:])
 
@@ -165,62 +176,89 @@ def dc(points: List[Point]):
     right_most_left = right.index(min(right, key=lambda r: r.x))
 
     # up support line
-    up_left = left_most_right
-    up_right = right_most_left
+    left_up = left_most_right
+    right_up = right_most_left
     while True:
-        support_line = right[up_right] - left[up_left]
+        support_line = right[right_up] - left[left_up]
 
-        right_forward = right[(up_right + 1) % right_size] - left[up_left]
-        right_backword = right[(up_right - 1) % right_size] - left[up_left]
+        right_forward = right[(right_up + 1) % right_size] - left[left_up]
+        right_backword = right[(right_up - 1) % right_size] - left[left_up]
 
         if ((support_line @ right_forward) * (support_line @ right_backword)) < 0:
-            up_right = (up_right - 1) % right_size
+            right_up = (right_up - 1) % right_size
             continue
 
-        left_forward = left[(up_left + 1) % left_size]
-        left_backword = left[(up_left - 1) % left_size]
+        left_forward = right[right_up] - left[(left_up + 1) % left_size]
+        left_backword = right[right_up] - left[(left_up - 1) % left_size]
 
         if ((support_line @ left_forward) * (support_line @ left_backword)) < 0:
-            up_left = (up_left + 1) % left_size
+            left_up = (left_up + 1) % left_size
             continue
         break
 
     # down support line
-    down_left = left_most_right
-    down_right = right_most_left
+    left_down = left_most_right
+    right_down = right_most_left
 
     while True:
-        support_line = right[down_right] - left[down_left]
+        support_line = left[left_down] - right[right_down]
 
-        right_forward = right[(down_right + 1) % right_size] - left[down_left]
-        right_backword = right[(down_right - 1) % right_size] - left[down_left]
-
-        if ((support_line @ right_forward) * (support_line @ right_backword)) < 0:
-            down_right = (down_right + 1) % right_size
-            continue
-
-        left_forward = left[(down_left + 1) % left_size]
-        left_backword = left[(down_left - 1) % left_size]
+        left_forward = left[(left_down + 1) % left_size] - right[right_down]
+        left_backword = left[(left_down - 1) % left_size] - right[right_down]
 
         if ((support_line @ left_forward) * (support_line @ left_backword)) < 0:
-            down_left = (down_left - 1) % left_size
+            left_down = (left_down - 1) % left_size
             continue
+
+        right_forward = left[left_down] - right[(right_down + 1) % right_size]
+        right_backword = left[left_down] - right[(right_down - 1) % right_size]
+
+        if ((support_line @ right_forward) * (support_line @ right_backword)) < 0:
+            right_down = (right_down + 1) % right_size
+            continue
+
         break
 
-    return [left[i % left_size] for i in range(up_left, down_left + left_size + (down_left != up_left))] + \
-           [right[i % right_size] for i in range(down_right, up_right + right_size + (down_right != up_right))]
+    res = []
+    res.append(left[left_up])
+    left_up = (left_up + 1) % left_size
+    while left_up != left_down:
+        res.append(left[left_up])
+        left_up = (left_up + 1) % left_size
+
+    res.append(right[right_down])
+    right_down = (right_down + 1) % right_size
+    while right_down != right_up:
+        res.append(right[right_down])
+        right_down = (right_down + 1) % right_size
+
+    return res
 
 
 def main():
-    a = Point(x=0, y=0)
-    b = Point(x=1, y=0)
-    c = Point(x=0, y=1)
-    d = Point(x=1, y=1)
-    e = Point(x=-1, y=-1)
+    points_mat = np.random.randint(0, 101, size=(5, 2))
+    points = [Point(x=x, y=y) for x, y in points_mat.tolist()]
 
-    print(enum_closure([a, b, c, d, e]))
-    print(graham_sacn([a, b, c, d, e]))
-    print(dc([a, b, c, d, e]))
+    # enum_res = enum_closure(points)
+    # x, y = zip(*enum_res)
+    # plt.title('enum')
+    # plt.scatter(points_mat[:, 0], points_mat[:, 1])
+    # plt.plot(x, y)
+    # plt.show()
+
+    dc_res = dc(points)
+    x, y = zip(*dc_res)
+    plt.title('dc')
+    plt.scatter(points_mat[:, 0], points_mat[:, 1])
+    plt.plot(x, y)
+    plt.show()
+
+    graham_res = graham_sacn(points)
+    x, y = zip(*graham_res)
+    plt.title('graham_fix')
+    plt.scatter(points_mat[:, 0], points_mat[:, 1])
+    plt.plot(x, y)
+    plt.show()
 
 
 if __name__ == '__main__':
