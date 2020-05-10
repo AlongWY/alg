@@ -91,7 +91,7 @@ def cmp(a: Point, b: Point):
     if a.y < b.y:
         return -1
     elif a.y == b.y:
-        return b.x - a.x
+        return a.x - b.x
     else:
         return 1
 
@@ -161,17 +161,30 @@ def relative(a, b, c):
     return (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x)
 
 
+@cmp_to_key
+def x_cmp(a: Point, b: Point):
+    if a.x < b.x:
+        return -1
+    elif a.x == b.x:
+        return a.y - b.y
+    else:
+        return 1
+
+
 def dc(points: List[Point]):
     # 基于分治的凸包求解算法
     if len(points) <= 3:
         points = sorted(points, key=cmp)
         return points[:1] + sorted(points[1:], key=lambda x: (x - points[0]).angle)
 
-    points = sorted(points, key=lambda x: x.x)
-    middle = len(points) // 2
+    middle = points[len(points) // 2].x
 
-    left = dc(points[:middle])
-    right = dc(points[middle:])
+    left = [point for point in points if point.x < middle]
+    right = points[len(left):]
+    left = dc(left)
+    if len(left) == len(points):
+        return left
+    right = dc(right)
 
     left_size = len(left)
     right_size = len(right)
@@ -179,23 +192,21 @@ def dc(points: List[Point]):
     left_most_right = left.index(max(left, key=lambda l: l.x))
     right_most_left = right.index(min(right, key=lambda r: r.x))
 
-    # fixme 当出现竖直的直线时，将会出现处理错误
-
     # up support line
     left_up = left_most_right
     right_up = right_most_left
     while True:
         right_forward = right[(right_up + 1) % right_size]
         right_backword = right[(right_up - 1) % right_size]
-        if not (relative(left[left_up], right[right_up], right_forward) < 0
-                and relative(left[left_up], right[right_up], right_backword) < 0):
+        if not (len(right) == 1 or (relative(left[left_up], right[right_up], right_forward) <= 0
+                                    and relative(left[left_up], right[right_up], right_backword) <= 0)):
             right_up = (right_up - 1) % right_size
             continue
 
         left_forward = left[(left_up + 1) % left_size]
         left_backword = left[(left_up - 1) % left_size]
-        if not (relative(left[left_up], right[right_up], left_forward) < 0 and
-                relative(left[left_up], right[right_up], left_backword) < 0):
+        if not (len(left) == 1 or (relative(left[left_up], right[right_up], left_forward) <= 0 and
+                                   relative(left[left_up], right[right_up], left_backword) <= 0)):
             left_up = (left_up + 1) % left_size
             continue
         break
@@ -207,15 +218,15 @@ def dc(points: List[Point]):
     while True:
         left_forward = left[(left_down + 1) % left_size]
         left_backword = left[(left_down - 1) % left_size]
-        if not (relative(left[left_down], right[right_down], left_forward) > 0 and
-                relative(left[left_down], right[right_down], left_backword) > 0):
+        if not (len(left) == 1 or (relative(left[left_down], right[right_down], left_forward) >= 0 and
+                                   relative(left[left_down], right[right_down], left_backword) >= 0)):
             left_down = (left_down - 1) % left_size
             continue
 
         right_forward = right[(right_down + 1) % right_size]
         right_backword = right[(right_down - 1) % right_size]
-        if not (relative(left[left_down], right[right_down], right_forward) > 0
-                and relative(left[left_down], right[right_down], right_backword) > 0):
+        if not (len(right) == 1 or (relative(left[left_down], right[right_down], right_forward) >= 0
+                                    and relative(left[left_down], right[right_down], right_backword) >= 0)):
             right_down = (right_down + 1) % right_size
             continue
         break
@@ -232,30 +243,52 @@ def dc(points: List[Point]):
     return points
 
 
-def main():
-    points_mat = np.random.randint(0, 101, size=(1000, 2))
-    points = [Point(x=x, y=y) for x, y in points_mat.tolist()]
+def filter_points(points):
+    points = sorted(points, key=x_cmp)
+    filter_points = [points.pop(0)]
+    last_equal = None
+    while len(points):
+        point = points.pop(0)
+        if point.x != filter_points[-1].x:
+            if last_equal:
+                filter_points.append(last_equal)
+                last_equal = None
+            filter_points.append(point)
+            continue
+        last_equal = point
+    if last_equal and last_equal.y != filter_points[-1].y:
+        filter_points.append(last_equal)
+    return filter_points
 
-    # enum_res = enum_closure(points)
-    # x, y = zip(*enum_res)
-    # plt.title('enum')
-    # plt.scatter(points_mat[:, 0], points_mat[:, 1])
-    # plt.plot(x, y)
-    # plt.show()
+
+def main():
+    points_mat = 100 * np.random.rand(1000, 2)
+    points = [Point(x=x, y=y) for x, y in points_mat.tolist()]
+    points = filter_points(points)
+
+    enum_res = enum_closure(points)
+    x, y = zip(*enum_res)
+    plt.title('enum')
+    plt.scatter(points_mat[:, 0], points_mat[:, 1])
+    plt.scatter(x, y, color='r')
+    plt.plot(x, y, color='r')
+    plt.show()
 
     dc_res = dc(points)
     x, y = zip(*dc_res)
     plt.title('dc')
     plt.scatter(points_mat[:, 0], points_mat[:, 1])
-    plt.plot(x, y)
+    plt.scatter(x, y, color='r')
+    plt.plot(x, y, color='r')
     plt.show()
 
-    # graham_res = graham_sacn(points)
-    # x, y = zip(*graham_res)
-    # plt.title('graham_fix')
-    # plt.scatter(points_mat[:, 0], points_mat[:, 1])
-    # plt.plot(x, y)
-    # plt.show()
+    graham_res = graham_sacn(points)
+    x, y = zip(*graham_res)
+    plt.title('graham')
+    plt.scatter(points_mat[:, 0], points_mat[:, 1])
+    plt.scatter(x, y, color='r')
+    plt.plot(x, y, color='r')
+    plt.show()
 
 
 if __name__ == '__main__':
