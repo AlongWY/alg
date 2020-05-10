@@ -185,8 +185,7 @@ def display(map, long, high, start, end, alg=a_star):
     print("cost:", cost)
 
     for point in path:
-        # canvas.create_image((point.x + 0.5) * width + eps, (point.y + 0.5) * width + eps, image=img)
-        canvas.create_oval(
+        canvas.create_rectangle(
             point.x * width + eps + width // 3, point.y * width + eps + width // 3,
             (point.x + 1) * width + eps - width // 3, (point.y + 1) * width + eps - width // 3,
             fill="black"
