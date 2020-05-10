@@ -154,21 +154,53 @@ def double_a_star(start: Point, end: Point, gird, long, high):
     return res, middle[0].g + middle[1].g - gird[middle[0].y][middle[0].x]
 
 
-def main():
-    # x: 0 --- 8  9
-    # y: 0 --- 5  6
+def main(alg=a_star):
+    import os
+    from PIL import Image, ImageTk
+    from tkinter import Tk, Canvas, mainloop
+    master = Tk()
+
     map = [
-        [1, 10, 10, 10, -1, 10, 10, 10, 10],
-        [10, 1, 10, 10, -1, 10, 10, 10, 10],
-        [10, 10, 1, 10, -1, 10, 10, 10, 10],
-        [10, 10, 10, 1, -1, 10, 10, 10, 10],
-        [10, 10, 10, 10, -1, 10, 10, 10, 10],
-        [10, 10, 10, 10, 10, 1, 1, 1, 1],
+        [0, 4, 4, 4, -1, 4, 4, 4, 4],
+        [4, 0, 4, 4, -1, 4, 4, 4, 4],
+        [4, 4, 0, 4, -1, 4, 4, 4, 4],
+        [4, 4, 4, 0, -1, 4, 4, 4, 4],
+        [4, 4, 4, 4, -1, 4, 4, 4, 4],
+        [4, 4, 4, 4, 4, 0, 0, 0, 0],
     ]
 
-    print(a_star(Point(0, 0), Point(8, 5), map, 9, 6))
-    print(double_a_star(Point(0, 0), Point(8, 5), map, 9, 6))
+    long = 9
+    high = 6
+    width = 50
+    eps = 10
+    canvas = Canvas(master, width=long * width + 2 * eps, height=high * width + 2 * eps)
+    canvas.pack()
+
+    img = Image.open(os.getcwd() + '/avatar.png')
+    img = img.resize((width, width), Image.ANTIALIAS)
+    img = ImageTk.PhotoImage(img)
+    color = {-1: 'black', 0: 'white', 2: 'blue', 4: 'yellow'}
+
+    for i in range(long):
+        for j in range(high):
+            canvas.create_rectangle(
+                i * width + eps, j * width + eps,
+                (i + 1) * width + eps, (j + 1) * width + eps,
+                fill=color[map[j][i]]
+            )
+
+    path, cost = alg(Point(0, 0), Point(8, 5), map, long, high)
+
+    for point in path:
+        canvas.create_image((point.x + 0.5) * width + eps, (point.y + 0.5) * width + eps, image=img)
+        # canvas.create_oval(
+        #     point.x * width + eps, point.y * width + eps,
+        #     (point.x + 1) * width + eps, (point.y + 1) * width + eps
+        # )
+
+    mainloop()
 
 
 if __name__ == '__main__':
-    main()
+    main(a_star)
+    main(double_a_star)
