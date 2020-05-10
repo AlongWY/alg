@@ -1,2 +1,8 @@
 /.idea
 *.mps
+/data
+/build
+*.pyd
+*.exp
+*.lib
+*.obj
