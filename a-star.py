@@ -204,7 +204,7 @@ def main(num=1):
 def build_map2():
     import numpy as np
     from PIL import Image
-    img = Image.open("map2.png")
+    img = Image.open("data/map2.png")
 
     long = 40
     high = 20
@@ -219,7 +219,7 @@ def build_map2():
             color = img.getpixel((i * 28 + 36, j * 28 + 40))
             map[j][i] = convertor[color]
 
-    np.savez('map2.npz', map=map, long=long, high=high, start=start, end=end)
+    np.savez('data/map2.npz', map=map, long=long, high=high, start=start, end=end)
 
 
 if __name__ == '__main__':
