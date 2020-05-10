@@ -2,6 +2,11 @@ from math import sqrt
 from collections import namedtuple
 import queue
 
+# {(127, 127, 127), (0, 176, 240), (255, 255, 255), (255, 192, 0)}
+gray = (127, 127, 127)
+blue = (0, 176, 240)
+white = (255, 255, 255)
+yellow = (255, 192, 0)
 Point = namedtuple('Point', ['x', 'y'])
 
 
@@ -166,24 +171,25 @@ def display(map, long, high, start, end, alg=a_star):
     img = Image.open(os.getcwd() + '/avatar.png')
     img = img.resize((width, width), Image.ANTIALIAS)
     img = ImageTk.PhotoImage(img)
-    color = {-1: 'black', 0: 'white', 2: 'blue', 4: 'yellow'}
+    color = {-1: gray, 0: white, 2: blue, 4: yellow}
 
     for i in range(long):
         for j in range(high):
             canvas.create_rectangle(
                 i * width + eps, j * width + eps,
                 (i + 1) * width + eps, (j + 1) * width + eps,
-                fill=color[map[j][i]]
+                fill="#%02x%02x%02x" % color[map[j][i]]
             )
 
     path, cost = alg(start, end, map, long, high)
     print("cost:", cost)
 
     for point in path:
-        canvas.create_image((point.x + 0.5) * width + eps, (point.y + 0.5) * width + eps, image=img)
+        # canvas.create_image((point.x + 0.5) * width + eps, (point.y + 0.5) * width + eps, image=img)
         canvas.create_oval(
-            point.x * width + eps, point.y * width + eps,
-            (point.x + 1) * width + eps, (point.y + 1) * width + eps
+            point.x * width + eps + width // 3, point.y * width + eps + width // 3,
+            (point.x + 1) * width + eps - width // 3, (point.y + 1) * width + eps - width // 3,
+            fill="black"
         )
 
     mainloop()
@@ -212,12 +218,6 @@ def build_map2():
     map = [[0] * long for i in range(high)]
     start = Point(4, 10)
     end = Point(35, 0)
-
-    # {(127, 127, 127), (0, 176, 240), (255, 255, 255), (255, 192, 0)}
-    gray = (127, 127, 127)
-    blue = (0, 176, 240)
-    white = (255, 255, 255)
-    yellow = (255, 192, 0)
 
     convertor = {gray: -1, white: 0, blue: 2, yellow: 4}
 
