@@ -154,24 +154,13 @@ def double_a_star(start: Point, end: Point, gird, long, high):
     return res, middle[0].g + middle[1].g - gird[middle[0].y][middle[0].x]
 
 
-def main(alg=a_star):
+def display(map, long, high, start, end, alg=a_star):
     import os
     from PIL import Image, ImageTk
     from tkinter import Tk, Canvas, mainloop
     master = Tk()
 
-    map = [
-        [0, 4, 4, 4, -1, 4, 4, 4, 4],
-        [4, 0, 4, 4, -1, 4, 4, 4, 4],
-        [4, 4, 0, 4, -1, 4, 4, 4, 4],
-        [4, 4, 4, 0, -1, 4, 4, 4, 4],
-        [4, 4, 4, 4, -1, 4, 4, 4, 4],
-        [4, 4, 4, 4, 4, 0, 0, 0, 0],
-    ]
-
-    long = 9
-    high = 6
-    width = 50
+    width = 20
     eps = 10
     canvas = Canvas(master, width=long * width + 2 * eps, height=high * width + 2 * eps)
     canvas.pack()
@@ -189,7 +178,8 @@ def main(alg=a_star):
                 fill=color[map[j][i]]
             )
 
-    path, cost = alg(Point(0, 0), Point(8, 5), map, long, high)
+    path, cost = alg(start, end, map, long, high)
+    print("cost:", cost)
 
     for point in path:
         canvas.create_image((point.x + 0.5) * width + eps, (point.y + 0.5) * width + eps, image=img)
@@ -201,6 +191,18 @@ def main(alg=a_star):
     mainloop()
 
 
+def main():
+    import numpy as np
+    npz = np.load('map1.npz')
+    map = npz['map']
+    long = npz['long']
+    high = npz['high']
+    start = Point(npz['start'][0], npz['start'][1])
+    end = Point(npz['end'][0], npz['end'][1])
+
+    display(map, long, high, start, end, a_star)
+    display(map, long, high, start, end, double_a_star)
+
+
 if __name__ == '__main__':
-    main(a_star)
-    main(double_a_star)
+    main()
