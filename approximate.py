@@ -61,7 +61,8 @@ def linear(X: set, F: list):
 
 
 def generate(size: int):
-    x_set = set(range(size))
+    x_set_source = set(range(size))
+    x_set = x_set_source
     res = [set(random.sample(x_set, 20))]
     x_set = x_set.difference(res[-1])
     while len(x_set) > 20:
@@ -73,7 +74,12 @@ def generate(size: int):
         x_set = x_set.difference(res[-1])
 
     res.append(x_set)
-    return res
+
+    for i in range(size - len(res)):
+        n = random.randint(1, 20)
+        res.append(set(random.sample(x_set_source, n)))
+
+    return x_set_source, res
 
 
 def check(X, S):
@@ -85,17 +91,13 @@ def check(X, S):
 
 
 def main():
-    sizes = []
+    sizes = [100, 1000, 5000]
     linear_times = []
     greedy_times = []
-    for size in range(1000, 10000, 1000):
-        sizes.append(size)
-        X = set(range(size))
-        F = generate(size)
-        res, linear_time = linear(X, F)
-        assert check(X, res)
+    for size in sizes:
+        X, F = generate(size)
         res, greedy_time = greedy(X, F)
-        assert check(X, res)
+        res, linear_time = linear(X, F)
 
         linear_times.append(linear_time)
         greedy_times.append(greedy_time)
