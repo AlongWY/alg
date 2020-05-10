@@ -230,5 +230,5 @@ def build_map2():
 
 
 if __name__ == '__main__':
-    build_map2()
+    main(1)
     main(2)
