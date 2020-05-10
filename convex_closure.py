@@ -261,34 +261,28 @@ def filter_points(points):
     return filter_points
 
 
+def display(title, line, points_mat):
+    x, y = zip(*line)
+    plt.title(title)
+    plt.scatter(points_mat[:, 0], points_mat[:, 1])
+    plt.scatter(x, y, color='r')
+    plt.plot(x, y, color='r')
+    plt.show()
+
+
 def main():
     points_mat = 100 * np.random.rand(1000, 2)
     points = [Point(x=x, y=y) for x, y in points_mat.tolist()]
     points = filter_points(points)
 
     enum_res = enum_closure(points)
-    x, y = zip(*enum_res)
-    plt.title('enum')
-    plt.scatter(points_mat[:, 0], points_mat[:, 1])
-    plt.scatter(x, y, color='r')
-    plt.plot(x, y, color='r')
-    plt.show()
+    display('enum', enum_res, points_mat)
 
     dc_res = dc(points)
-    x, y = zip(*dc_res)
-    plt.title('dc')
-    plt.scatter(points_mat[:, 0], points_mat[:, 1])
-    plt.scatter(x, y, color='r')
-    plt.plot(x, y, color='r')
-    plt.show()
+    display('dc', dc_res, points_mat)
 
     graham_res = graham_sacn(points)
-    x, y = zip(*graham_res)
-    plt.title('graham')
-    plt.scatter(points_mat[:, 0], points_mat[:, 1])
-    plt.scatter(x, y, color='r')
-    plt.plot(x, y, color='r')
-    plt.show()
+    display('graham', graham_res, points_mat)
 
 
 if __name__ == '__main__':
