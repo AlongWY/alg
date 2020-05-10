@@ -1,3 +1,19 @@
+import time, random
+import matplotlib.pyplot as plt
+
+
+def exe_time(func):
+    def new_func(*args, **args2):
+        t0 = time.time()
+        back = func(*args, **args2)
+        t1 = time.time()
+        print("@%.3fs taken for {%s}" % (t1 - t0, func.__name__))
+        return back, t1 - t0
+
+    return new_func
+
+
+@exe_time
 def greedy(X: set, F: list):
     price = {x: 1 for x in X}
     U = set()
@@ -23,6 +39,7 @@ def greedy(X: set, F: list):
     return C
 
 
+@exe_time
 def linear(X: set, F: list):
     from itertools import chain
     from collections import Counter
@@ -40,14 +57,52 @@ def linear(X: set, F: list):
     problem.solve()
 
     f = 1. / Counter(chain(*F)).most_common(1)[0][1]
-    return [F[index] for index, var in enumerate(variables) if value(var) > f]
+    return [F[index] for index, var in enumerate(variables) if value(var) >= f]
+
+
+def generate(size: int):
+    x_set = set(range(size))
+    res = [set(random.sample(x_set, 20))]
+    x_set = x_set.difference(res[-1])
+    while len(x_set) > 20:
+        n = random.randint(1, 20)
+        x = random.randint(1, n)
+        s = random.sample(x_set, n - x)
+        s.extend(random.sample(x_set, x))
+        res.append(set(s))
+        x_set = x_set.difference(res[-1])
+
+    res.append(x_set)
+    return res
+
+
+def check(X, S):
+    union = set()
+    for s in S:
+        union.update(s)
+
+    return union == X
 
 
 def main():
-    X = {1, 2, 3, 4, 5, 6, 7}
-    F = [{1, 2, 3, 4}, {2, 3, 4}, {4, 5, 6, 7}]
-    print(linear(X, F))
-    print(greedy(X, F))
+    sizes = []
+    linear_times = []
+    greedy_times = []
+    for size in range(1000, 10000, 1000):
+        sizes.append(size)
+        X = set(range(size))
+        F = generate(size)
+        res, linear_time = linear(X, F)
+        assert check(X, res)
+        res, greedy_time = greedy(X, F)
+        assert check(X, res)
+
+        linear_times.append(linear_time)
+        greedy_times.append(greedy_time)
+
+    plt.plot(sizes, greedy_times, color='g', label="greedy")
+    plt.plot(sizes, linear_times, color='r', label="linear")
+    plt.show()
 
 
 if __name__ == '__main__':
