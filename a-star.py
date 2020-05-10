@@ -123,12 +123,10 @@ def double_a_star(start: Point, end: Point, gird, long, high):
     middle = None
 
     def check(forward_open_set, backward_open_set):
-        min_cost = float("inf")
         middle = None
-        for item in forward_open_set.queue:
-            if item in backward_open_set.dict:
-                if item.g + backward_open_set.dict[item].g < min_cost:
-                    middle = item, backward_open_set.dict[item]
+        item = forward_open_set.queue[0]
+        if item in backward_open_set.dict:
+            return item, backward_open_set.dict[item]
         return middle
 
     while (not forward_open_set.empty()) and (not backward_open_set.empty()) and (middle is None):
@@ -151,7 +149,7 @@ def double_a_star(start: Point, end: Point, gird, long, high):
         if backword is not None:
             res.insert(0, backword)
 
-    return res, middle[0].g + middle[1].g - gird[middle[0].y][middle[0].x]
+    return res, middle[0].g + middle[1].g
 
 
 def display(map, long, high, start, end, alg=a_star):
@@ -183,17 +181,17 @@ def display(map, long, high, start, end, alg=a_star):
 
     for point in path:
         canvas.create_image((point.x + 0.5) * width + eps, (point.y + 0.5) * width + eps, image=img)
-        # canvas.create_oval(
-        #     point.x * width + eps, point.y * width + eps,
-        #     (point.x + 1) * width + eps, (point.y + 1) * width + eps
-        # )
+        canvas.create_oval(
+            point.x * width + eps, point.y * width + eps,
+            (point.x + 1) * width + eps, (point.y + 1) * width + eps
+        )
 
     mainloop()
 
 
-def main():
+def main(num=1):
     import numpy as np
-    npz = np.load('map1.npz')
+    npz = np.load(f'map{num}.npz')
     map = npz['map']
     long = npz['long']
     high = npz['high']
@@ -204,5 +202,33 @@ def main():
     display(map, long, high, start, end, double_a_star)
 
 
+def build_map2():
+    import numpy as np
+    from PIL import Image
+    img = Image.open("map2.png")
+
+    long = 40
+    high = 20
+    map = [[0] * long for i in range(high)]
+    start = Point(4, 10)
+    end = Point(35, 0)
+
+    # {(127, 127, 127), (0, 176, 240), (255, 255, 255), (255, 192, 0)}
+    gray = (127, 127, 127)
+    blue = (0, 176, 240)
+    white = (255, 255, 255)
+    yellow = (255, 192, 0)
+
+    convertor = {gray: -1, white: 0, blue: 2, yellow: 4}
+
+    for i in range(40):
+        for j in range(20):
+            color = img.getpixel((i * 28 + 36, j * 28 + 40))
+            map[j][i] = convertor[color]
+
+    np.savez('map2.npz', map=map, long=long, high=high, start=start, end=end)
+
+
 if __name__ == '__main__':
-    main()
+    build_map2()
+    main(2)
