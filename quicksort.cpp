@@ -45,6 +45,6 @@ std::vector<int> cppsort(std::vector<int> array) {
 
 PYBIND11_MODULE(quicksort, m) {
     m.doc() = "quick sort"; // optional module docstring
-    m.def("quicksort", &quicksort, "A quick sort c++ extension");
     m.def("cppsort", &cppsort, "C++ sort");
+    m.def("quicksort", &quicksort, "A quick sort c++ extension");
 }
