@@ -1,11 +1,22 @@
 # 凸包算法
-
+import time
 from typing import List
 from functools import cmp_to_key
 from collections import namedtuple
-from math import sqrt, acos, atan2
+from math import sqrt, atan2
 import numpy as np
 import matplotlib.pyplot as plt
+
+
+def exe_time(func):
+    def new_func(*args, **args2):
+        t0 = time.time()
+        back = func(*args, **args2)
+        t1 = time.time()
+        print("@%.3fs taken for {%s}" % (t1 - t0, func.__name__))
+        return back, t1 - t0
+
+    return new_func
 
 
 class Point(namedtuple('Point', ['x', 'y'])):
@@ -96,6 +107,7 @@ def cmp(a: Point, b: Point):
         return 1
 
 
+@exe_time
 def enum_closure(points: List[Point]):
     # 基于枚举的凸包求解算法
     if len(points) <= 3:
@@ -131,6 +143,7 @@ def enum_closure(points: List[Point]):
     return points
 
 
+@exe_time
 def graham_sacn(points: List[Point]):
     # Graham扫描算法
     if len(points) <= 3:
@@ -171,76 +184,80 @@ def x_cmp(a: Point, b: Point):
         return 1
 
 
+@exe_time
 def dc(points: List[Point]):
-    # 基于分治的凸包求解算法
-    if len(points) <= 3:
-        points = sorted(points, key=cmp)
-        return points[:1] + sorted(points[1:], key=lambda x: (x - points[0]).angle)
+    def dc_(points: List[Point]):
+        # 基于分治的凸包求解算法
+        if len(points) <= 3:
+            points = sorted(points, key=cmp)
+            return points[:1] + sorted(points[1:], key=lambda x: (x - points[0]).angle)
 
-    middle = points[len(points) // 2].x
+        middle = points[len(points) // 2].x
 
-    left = [point for point in points if point.x < middle]
-    right = points[len(left):]
-    left = dc(left)
-    if len(left) == len(points):
-        return left
-    right = dc(right)
+        left = [point for point in points if point.x < middle]
+        right = points[len(left):]
+        left = dc_(left)
+        if len(left) == len(points):
+            return left
+        right = dc_(right)
 
-    left_size = len(left)
-    right_size = len(right)
+        left_size = len(left)
+        right_size = len(right)
 
-    left_most_right = left.index(max(left, key=lambda l: l.x))
-    right_most_left = right.index(min(right, key=lambda r: r.x))
+        left_most_right = left.index(max(left, key=lambda l: l.x))
+        right_most_left = right.index(min(right, key=lambda r: r.x))
 
-    # up support line
-    left_up = left_most_right
-    right_up = right_most_left
-    while True:
-        right_forward = right[(right_up + 1) % right_size]
-        right_backword = right[(right_up - 1) % right_size]
-        if not (len(right) == 1 or (relative(left[left_up], right[right_up], right_forward) <= 0
-                                    and relative(left[left_up], right[right_up], right_backword) <= 0)):
-            right_up = (right_up - 1) % right_size
-            continue
+        # up support line
+        left_up = left_most_right
+        right_up = right_most_left
+        while True:
+            right_forward = right[(right_up + 1) % right_size]
+            right_backword = right[(right_up - 1) % right_size]
+            if not (len(right) == 1 or (relative(left[left_up], right[right_up], right_forward) <= 0
+                                        and relative(left[left_up], right[right_up], right_backword) <= 0)):
+                right_up = (right_up - 1) % right_size
+                continue
 
-        left_forward = left[(left_up + 1) % left_size]
-        left_backword = left[(left_up - 1) % left_size]
-        if not (len(left) == 1 or (relative(left[left_up], right[right_up], left_forward) <= 0 and
-                                   relative(left[left_up], right[right_up], left_backword) <= 0)):
-            left_up = (left_up + 1) % left_size
-            continue
-        break
-
-    # down support line
-    left_down = left_most_right
-    right_down = right_most_left
-
-    while True:
-        left_forward = left[(left_down + 1) % left_size]
-        left_backword = left[(left_down - 1) % left_size]
-        if not (len(left) == 1 or (relative(left[left_down], right[right_down], left_forward) >= 0 and
-                                   relative(left[left_down], right[right_down], left_backword) >= 0)):
-            left_down = (left_down - 1) % left_size
-            continue
-
-        right_forward = right[(right_down + 1) % right_size]
-        right_backword = right[(right_down - 1) % right_size]
-        if not (len(right) == 1 or (relative(left[left_down], right[right_down], right_forward) >= 0
-                                    and relative(left[left_down], right[right_down], right_backword) >= 0)):
-            right_down = (right_down + 1) % right_size
-            continue
-        break
-
-    points = []
-    for i in range(left_up, left_up + left_size):
-        points.append(left[i % left_size])
-        if i % left_size == left_down:
+            left_forward = left[(left_up + 1) % left_size]
+            left_backword = left[(left_up - 1) % left_size]
+            if not (len(left) == 1 or (relative(left[left_up], right[right_up], left_forward) <= 0 and
+                                       relative(left[left_up], right[right_up], left_backword) <= 0)):
+                left_up = (left_up + 1) % left_size
+                continue
             break
-    for i in range(right_down, right_down + right_size):
-        points.append(right[i % right_size])
-        if i % right_size == right_up:
+
+        # down support line
+        left_down = left_most_right
+        right_down = right_most_left
+
+        while True:
+            left_forward = left[(left_down + 1) % left_size]
+            left_backword = left[(left_down - 1) % left_size]
+            if not (len(left) == 1 or (relative(left[left_down], right[right_down], left_forward) >= 0 and
+                                       relative(left[left_down], right[right_down], left_backword) >= 0)):
+                left_down = (left_down - 1) % left_size
+                continue
+
+            right_forward = right[(right_down + 1) % right_size]
+            right_backword = right[(right_down - 1) % right_size]
+            if not (len(right) == 1 or (relative(left[left_down], right[right_down], right_forward) >= 0
+                                        and relative(left[left_down], right[right_down], right_backword) >= 0)):
+                right_down = (right_down + 1) % right_size
+                continue
             break
-    return points
+
+        points = []
+        for i in range(left_up, left_up + left_size):
+            points.append(left[i % left_size])
+            if i % left_size == left_down:
+                break
+        for i in range(right_down, right_down + right_size):
+            points.append(right[i % right_size])
+            if i % right_size == right_up:
+                break
+        return points
+
+    return dc_(points)
 
 
 def filter_points(points):
@@ -275,14 +292,36 @@ def main():
     points = [Point(x=x, y=y) for x, y in points_mat.tolist()]
     points = filter_points(points)
 
-    enum_res = enum_closure(points)
-    display('enum', enum_res, points_mat)
+    enum_res, enum_t_1000 = enum_closure(points)
+    dc_res, dc_t_1000 = dc(points)
+    graham_res, graham_t_1000 = graham_sacn(points)
 
-    dc_res = dc(points)
-    display('dc', dc_res, points_mat)
+    points_mat = 100 * np.random.rand(2000, 2)
+    points = [Point(x=x, y=y) for x, y in points_mat.tolist()]
+    points = filter_points(points)
 
-    graham_res = graham_sacn(points)
-    display('graham', graham_res, points_mat)
+    enum_res, enum_t_2000 = enum_closure(points)
+    dc_res, dc_t_2000 = dc(points)
+    graham_res, graham_t_2000 = graham_sacn(points)
+
+    points_mat = 100 * np.random.rand(3000, 2)
+    points = [Point(x=x, y=y) for x, y in points_mat.tolist()]
+    points = filter_points(points)
+
+    enum_res, enum_t_3000 = enum_closure(points)
+    dc_res, dc_t_3000 = dc(points)
+    graham_res, graham_t_3000 = graham_sacn(points)
+
+    x = [1000, 2000, 3000]
+    plt.title("enum")
+    plt.plot(x, [enum_t_1000, enum_t_2000, enum_t_3000], color='r')
+    plt.show()
+    plt.title("dc")
+    plt.plot(x, [dc_t_1000, dc_t_2000, dc_t_3000], color='g')
+    plt.show()
+    plt.title("graham")
+    plt.plot(x, [graham_t_1000, graham_t_2000, graham_t_3000], color='b')
+    plt.show()
 
 
 if __name__ == '__main__':
