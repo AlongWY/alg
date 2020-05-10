@@ -190,7 +190,7 @@ def display(map, long, high, start, end, alg=a_star):
 
 def main(num=1):
     import numpy as np
-    npz = np.load(f'map{num}.npz')
+    npz = np.load(f'data/map{num}.npz')
     map = npz['map']
     long = npz['long']
     high = npz['high']
