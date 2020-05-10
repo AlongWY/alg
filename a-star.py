@@ -158,8 +158,6 @@ def double_a_star(start: Point, end: Point, gird, long, high):
 
 
 def display(map, long, high, start, end, alg=a_star):
-    import os
-    from PIL import Image, ImageTk
     from tkinter import Tk, Canvas, mainloop
     master = Tk()
 
@@ -168,11 +166,7 @@ def display(map, long, high, start, end, alg=a_star):
     canvas = Canvas(master, width=long * width + 2 * eps, height=high * width + 2 * eps)
     canvas.pack()
 
-    img = Image.open(os.getcwd() + '/avatar.png')
-    img = img.resize((width, width), Image.ANTIALIAS)
-    img = ImageTk.PhotoImage(img)
     color = {-1: gray, 0: white, 2: blue, 4: yellow}
-
     for i in range(long):
         for j in range(high):
             canvas.create_rectangle(
