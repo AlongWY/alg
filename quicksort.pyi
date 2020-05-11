@@ -1,6 +1,10 @@
+def cppsort(array):
+    pass
+
+
 def quicksort(array):
     pass
 
 
-def cppsort(array):
+def quicksort_opt(array):
     pass

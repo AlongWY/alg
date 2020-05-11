@@ -38,6 +38,59 @@ std::vector<int> quicksort(std::vector<int> array) {
    return array;
 }
 
+void insert_sort(std::vector<int> &array, int l, int r) {
+    for (int j = l; j <= r; j++) {
+        int key = array[j];
+        int i = j - 1;
+        for (; i >= 0 && key < array[i]; i--) {
+            array[i + 1] = array[i];
+        }
+        array[i + 1] = key;
+    }
+}
+
+std::pair<int, int> rand_partition_opt(std::vector<int> &array, int l, int r) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(l, r);
+    auto i = dis(gen);
+
+    // a[l] ? ? ? ? ? a[i] ? ? ? ? ? ? a[r] ->
+    // a[l] ? ? ? ? ? a[r] ? ? ? ? ? ? a[i]
+    std::swap(array[r], array[i]);
+
+    int x = array[r];
+    i = r - 1;
+    auto ml = l;
+    auto mr = r;
+
+    while (i >= ml) {
+        if (array[i] > x) {
+            std::swap(array[i--], array[mr--]);
+        } else if (array[i] < x) {
+            std::swap(array[i], array[ml++]);
+        } else
+            i--;
+    }
+
+    return std::make_pair(ml, mr);
+}
+
+void quicksort_opt_(std::vector<int> &array, int l, int r) {
+    if (r - l <= 16) {
+        insert_sort(array, l, r);
+    } else if (l < r) {
+        auto m = rand_partition_opt(array, l, r);
+        quicksort_opt_(array, l, m.first - 1);
+        quicksort_opt_(array, m.second + 1, r);
+    }
+}
+
+std::vector<int> quicksort_opt(std::vector<int> array) {
+    quicksort_opt_(array, 0, array.size() - 1);
+    return array;
+}
+
 std::vector<int> cppsort(std::vector<int> array) {
    std::sort(array.begin(), array.end());
    return array;
@@ -47,4 +100,5 @@ PYBIND11_MODULE(quicksort, m) {
     m.doc() = "quick sort"; // optional module docstring
     m.def("cppsort", &cppsort, "C++ sort");
     m.def("quicksort", &quicksort, "A quick sort c++ extension");
+    m.def("quicksort_opt", &quicksort_opt, "A optimizerd quick sort c++ extension");
 }
