@@ -1,5 +1,5 @@
 import time
-import numpy as np
+import random
 import matplotlib.pyplot as plt
 from quicksort import csort, cppsort, quicksort, quicksort_opt
 
@@ -29,19 +29,25 @@ def main():
     ext_ts = []
     opt_ts = []
     for percent in percents:
-        print(percent)
-        repeated = 1 - percent / 10
-        source_array = np.random.randint(low=0, high=size * repeated + 1, size=size)
-        sorted_array, c_t = csort(source_array)
-        sorted_array, cpp_t = cppsort(source_array)
-        sorted_array, opt_t = quicksort_opt(source_array)
+        repeated_ratio = 1 - percent / 10
+        not_repeated = list(range(1, int(size * repeated_ratio)))
+        repeated = [0] * (size - len(not_repeated))
+        source_array = repeated + not_repeated
+        random.shuffle(source_array)
+
+        c_sorted_array, c_t = csort(source_array)
+        cpp_sorted_array, cpp_t = cppsort(source_array)
+        opt_sorted_array, opt_t = quicksort_opt(source_array)
+
+        assert cpp_sorted_array == opt_sorted_array
 
         c_ts.append(c_t)
         cpp_ts.append(cpp_t)
         opt_ts.append(opt_t)
 
         if percent < 10:
-            sorted_array, ext_t = quicksort(source_array)
+            ext_sorted_array, ext_t = quicksort(source_array)
+            assert cpp_sorted_array == opt_sorted_array
             ext_ts.append(ext_t)
 
     plt.plot(percents, c_ts)
