@@ -91,7 +91,7 @@ def check(X, S):
 
 
 def main():
-    sizes = [100, 1000, 5000]
+    sizes = [50, 100, 500, 1000, 2500, 5000]
     linear_times = []
     greedy_times = []
     for size in sizes:
