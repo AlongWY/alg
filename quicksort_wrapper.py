@@ -32,10 +32,10 @@ def main():
     for percent in percents:
         repeated_ratio = 1 - percent / 10
         not_repeated = list(range(1, int(size * repeated_ratio)))
-        if len(not_repeated) < size:
+        if len(not_repeated) > 0:
             repeated = [random.choice(not_repeated)] * (size - len(not_repeated))
         else:
-            repeated = []
+            repeated = [0] * size
         source_array = repeated + not_repeated
         random.shuffle(source_array)
 
