@@ -45,7 +45,7 @@ def main():
         cpp_ts.append(cpp_t)
         opt_ts.append(opt_t)
 
-        if percent < 10:
+        if percent < 7:
             ext_sorted_array, ext_t = quicksort(source_array)
             assert cpp_sorted_array == opt_sorted_array
             ext_ts.append(ext_t)
