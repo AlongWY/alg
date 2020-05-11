@@ -96,8 +96,18 @@ std::vector<int> cppsort(std::vector<int> array) {
    return array;
 }
 
+int compare(const void *a, const void *b) {
+    return (*(int *) a - *(int *) b);
+}
+
+std::vector<int> csort(std::vector<int> array) {
+    std::qsort(array.data(), array.size(), sizeof(int), compare);
+    return array;
+}
+
 PYBIND11_MODULE(quicksort, m) {
     m.doc() = "quick sort"; // optional module docstring
+    m.def("csort", &csort, "C qsort");
     m.def("cppsort", &cppsort, "C++ sort");
     m.def("quicksort", &quicksort, "A quick sort c++ extension");
     m.def("quicksort_opt", &quicksort_opt, "A optimizerd quick sort c++ extension");
