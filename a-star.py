@@ -1,6 +1,19 @@
+import time
 from math import sqrt
 from collections import namedtuple
 import queue
+
+
+def exe_time(func):
+    def new_func(*args, **args2):
+        t0 = time.time()
+        back = func(*args, **args2)
+        t1 = time.time()
+        print("@%.3fs taken for {%s}" % (t1 - t0, func.__name__))
+        return back, t1 - t0
+
+    return new_func
+
 
 # {(127, 127, 127), (0, 176, 240), (255, 255, 255), (255, 192, 0)}
 gray = (127, 127, 127)
@@ -102,6 +115,7 @@ def a_star_step(open_set: PriorityQueue, close_set: set, res, target, gird, long
             open_set.put(position)
 
 
+@exe_time
 def a_star(start: Point, end: Point, gird, long, high):
     open_set = PriorityQueue()
     close_set = set()
@@ -113,6 +127,7 @@ def a_star(start: Point, end: Point, gird, long, high):
     return res, res[0].g
 
 
+@exe_time
 def double_a_star(start: Point, end: Point, gird, long, high):
     forward_open_set = PriorityQueue()
     forward_close_set = set()
@@ -175,7 +190,7 @@ def display(map, long, high, start, end, alg=a_star):
                 fill="#%02x%02x%02x" % color[map[j][i]]
             )
 
-    path, cost = alg(start, end, map, long, high)
+    (path, cost), time = alg(start, end, map, long, high)
     print("cost:", cost)
 
     for point in path:
