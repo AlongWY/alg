@@ -302,39 +302,32 @@ def test():
 
 
 def main():
-    points_mat = 100 * np.random.rand(1000, 2)
-    points = [Point(x=x, y=y) for x, y in points_mat.tolist()]
-    points = filter_points(points)
+    sizes = [10, 50, 100, 500, 1000, 1500, 2000, 2500, 3000]
+    enum_ts = []
+    dc_ts = []
+    graham_ts = []
 
-    enum_res, enum_t_1000 = enum_closure(points)
-    dc_res, dc_t_1000 = dc(points)
-    graham_res, graham_t_1000 = graham_sacn(points)
+    for size in sizes:
+        points_mat = 100 * np.random.rand(size, 2)
+        points = [Point(x=x, y=y) for x, y in points_mat.tolist()]
+        points = filter_points(points)
 
-    points_mat = 100 * np.random.rand(2000, 2)
-    points = [Point(x=x, y=y) for x, y in points_mat.tolist()]
-    points = filter_points(points)
+        enum_res, enum_t = enum_closure(points)
+        dc_res, dc_t = dc(points)
+        graham_res, graham_t = graham_sacn(points)
 
-    enum_res, enum_t_2000 = enum_closure(points)
-    dc_res, dc_t_2000 = dc(points)
-    graham_res, graham_t_2000 = graham_sacn(points)
+        enum_ts.append(enum_t)
+        dc_ts.append(dc_t)
+        graham_ts.append(graham_t)
 
-    points_mat = 100 * np.random.rand(3000, 2)
-    points = [Point(x=x, y=y) for x, y in points_mat.tolist()]
-    points = filter_points(points)
-
-    enum_res, enum_t_3000 = enum_closure(points)
-    dc_res, dc_t_3000 = dc(points)
-    graham_res, graham_t_3000 = graham_sacn(points)
-
-    x = [1000, 2000, 3000]
     plt.title("enum")
-    plt.plot(x, [enum_t_1000, enum_t_2000, enum_t_3000], color='r')
+    plt.plot(sizes, enum_ts, color='r')
     plt.show()
     plt.title("dc")
-    plt.plot(x, [dc_t_1000, dc_t_2000, dc_t_3000], color='g')
+    plt.plot(sizes, dc_ts, color='g')
     plt.show()
     plt.title("graham")
-    plt.plot(x, [graham_t_1000, graham_t_2000, graham_t_3000], color='b')
+    plt.plot(sizes, graham_ts, color='b')
     plt.show()
 
 
