@@ -1,11 +1,13 @@
 # 凸包算法
 import time
 from typing import List
-from functools import cmp_to_key
-from collections import namedtuple
-from math import sqrt, atan2
 import numpy as np
 import matplotlib.pyplot as plt
+from functools import cmp_to_key
+from convex_closure_opt import Point, point_in_triangle, cmp, x_cmp, relative
+
+cmp = cmp_to_key(cmp)
+x_cmp = cmp_to_key(x_cmp)
 
 
 def exe_time(func):
@@ -17,94 +19,6 @@ def exe_time(func):
         return back, t1 - t0
 
     return new_func
-
-
-class Point(namedtuple('Point', ['x', 'y'])):
-    def __repr__(self):
-        return f"({self.x},{self.y})"
-
-    def __eq__(self, other):
-        if not isinstance(other, Point):
-            return False
-        return self.x == other.x and self.y == other.y
-
-    def __abs__(self):
-        return sqrt(self.x ** 2 + self.y ** 2)
-
-    def __add__(self, other):
-        if isinstance(other, Point):
-            return Point(x=self.x + other.x, y=self.y + other.y)
-        else:
-            raise NotImplementedError()
-
-    def __sub__(self, other):
-        if isinstance(other, Point):
-            return Point(x=self.x - other.x, y=self.y - other.y)
-        else:
-            raise NotImplementedError()
-
-    def __mul__(self, other) -> float:
-        # 点乘
-        if isinstance(other, Point):
-            return self.x * other.x + self.y * other.y
-        else:
-            raise NotImplementedError()
-
-    def __matmul__(self, other):
-        # 叉乘
-        if isinstance(other, Point):
-            return self.x * other.y - other.x * self.y
-        else:
-            raise NotImplementedError()
-
-    def __neg__(self):
-        return Point(-self.x, -self.y)
-
-    def __pos__(self):
-        return self
-
-    @property
-    def angle(self):
-        return atan2(self.y, self.x)
-
-
-def point_in_triangle(a: Point, b: Point, c: Point, p: Point) -> bool:
-    # p = A + u * (c - a) + v * (b - a)
-    # u < 0 或者 v < 0 时，p 在外侧
-    # u + v > 1, p 超出三角形
-    v0 = c - a
-    v1 = b - a
-    v2 = p - a
-
-    dot00 = v0 * v0
-    dot01 = v0 * v1
-    dot02 = v0 * v2
-    dot11 = v1 * v1
-    dot12 = v1 * v2
-
-    try:
-        inverDeno = 1.0 / (dot00 * dot11 - dot01 * dot01)
-    except Exception:
-        # 共线，等于不处理
-        return False
-
-    u = (dot11 * dot02 - dot01 * dot12) * inverDeno
-    if u < 0 or u > 1:
-        return False
-    v = (dot00 * dot12 - dot01 * dot02) * inverDeno
-    if v < 0 or v > 1:
-        return False
-    return u + v <= 1
-
-
-@cmp_to_key
-def cmp(a: Point, b: Point):
-    if a.y < b.y:
-        return -1
-    elif a.y == b.y:
-        return a.x - b.x
-    else:
-        return 1
 
 
 @exe_time
@@ -167,21 +81,6 @@ def graham_sacn(points: List[Point]):
             break
 
     return points
-
-
-def relative(a, b, c):
-    # a --> b
-    return (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x)
-
-
-@cmp_to_key
-def x_cmp(a: Point, b: Point):
-    if a.x < b.x:
-        return -1
-    elif a.x == b.x:
-        return a.y - b.y
-    else:
-        return 1
 
 
 @exe_time
@@ -279,11 +178,14 @@ def filter_points(points):
 
 
 def display(title, line, points_mat):
-    x, y = zip(*line)
+    xs, ys = [], []
+    for xy in line:
+        xs.append(xy.x)
+        ys.append(xy.y)
     plt.title(title)
     plt.scatter(points_mat[:, 0], points_mat[:, 1])
-    plt.scatter(x, y, color='r')
-    plt.plot(x, y, color='r')
+    plt.scatter(xs, ys, color='r')
+    plt.plot(xs, ys, color='r')
     plt.show()
 
 
