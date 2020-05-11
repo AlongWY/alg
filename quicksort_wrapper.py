@@ -28,6 +28,7 @@ def main():
     cpp_ts = []
     ext_ts = []
     opt_ts = []
+    threshold = 7
     for percent in percents:
         repeated_ratio = 1 - percent / 10
         not_repeated = list(range(1, int(size * repeated_ratio)))
@@ -45,7 +46,7 @@ def main():
         cpp_ts.append(cpp_t)
         opt_ts.append(opt_t)
 
-        if percent < 7:
+        if percent < threshold:
             ext_sorted_array, ext_t = quicksort(source_array)
             assert cpp_sorted_array == opt_sorted_array
             ext_ts.append(ext_t)
@@ -54,7 +55,7 @@ def main():
     plt.plot(percents, cpp_ts)
     plt.plot(percents, opt_ts)
     plt.show()
-    plt.plot(percents[:10], ext_ts)
+    plt.plot(percents[:threshold], ext_ts)
     plt.show()
 
 
