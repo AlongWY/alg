@@ -287,6 +287,20 @@ def display(title, line, points_mat):
     plt.show()
 
 
+def test():
+    points_mat = 100 * np.random.rand(1000, 2)
+    points = [Point(x=x, y=y) for x, y in points_mat.tolist()]
+    points = filter_points(points)
+
+    enum_res, enum_t_1000 = enum_closure(points)
+    dc_res, dc_t_1000 = dc(points)
+    graham_res, graham_t_1000 = graham_sacn(points)
+
+    display('enum', enum_res, points_mat)
+    display('dc', dc_res, points_mat)
+    display('graham', graham_res, points_mat)
+
+
 def main():
     points_mat = 100 * np.random.rand(1000, 2)
     points = [Point(x=x, y=y) for x, y in points_mat.tolist()]
@@ -325,4 +339,5 @@ def main():
 
 
 if __name__ == '__main__':
+    test()
     main()
