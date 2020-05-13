@@ -91,19 +91,32 @@ def check(X, S):
 
 
 def main():
-    sizes = [50, 100, 500, 1000, 2500, 5000]
+    sizes = [50, 100, 500, 1000, 2000, 4000, 5000]
+    linear_sizes = []
+    greedy_sizes = []
+
     linear_times = []
     greedy_times = []
     for size in sizes:
         X, F = generate(size)
         res, greedy_time = greedy(X, F)
+        greedy_sizes.append(len(res))
         res, linear_time = linear(X, F)
+        linear_sizes.append(len(res))
 
         linear_times.append(linear_time)
         greedy_times.append(greedy_time)
 
+    plt.plot(sizes, greedy_sizes, color='g', label="greedy")
+    plt.plot(sizes, linear_sizes, color='r', label="linear")
+    plt.legend()
+    plt.savefig("approximate_size")
+    plt.show()
+
     plt.plot(sizes, greedy_times, color='g', label="greedy")
     plt.plot(sizes, linear_times, color='r', label="linear")
+    plt.legend()
+    plt.savefig("approximate")
     plt.show()
 
 

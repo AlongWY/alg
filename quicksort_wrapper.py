@@ -54,11 +54,15 @@ def main():
             assert cpp_sorted_array == opt_sorted_array
             ext_ts.append(ext_t)
 
-    plt.plot(percents, c_ts)
-    plt.plot(percents, cpp_ts)
-    plt.plot(percents, opt_ts)
+    plt.plot(percents[:threshold], ext_ts, label='quicksort')
+    plt.savefig("quicksort")
     plt.show()
-    plt.plot(percents[:threshold], ext_ts)
+
+    plt.plot(percents, c_ts, label='c')
+    plt.plot(percents, cpp_ts, label='c++')
+    plt.plot(percents, opt_ts, label='opt')
+    plt.legend()
+    plt.savefig("quicksort_opt")
     plt.show()
 
 

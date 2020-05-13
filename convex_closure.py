@@ -222,17 +222,19 @@ def main():
         dc_ts.append(dc_t)
         graham_ts.append(graham_t)
 
-    plt.title("enum")
-    plt.plot(sizes, enum_ts, color='r')
+    plt.title("convex_closure")
+    plt.plot(sizes, enum_ts, color='r', label='enum')
+    plt.legend()
+    plt.savefig("convex_closure_enum")
     plt.show()
-    plt.title("dc")
-    plt.plot(sizes, dc_ts, color='g')
-    plt.show()
-    plt.title("graham")
-    plt.plot(sizes, graham_ts, color='b')
+
+    plt.title("convex_closure")
+    plt.plot(sizes, dc_ts, color='g', label='dc')
+    plt.plot(sizes, graham_ts, color='b', label='graham')
+    plt.legend()
+    plt.savefig("convex_closure")
     plt.show()
 
 
 if __name__ == '__main__':
-    test()
     main()
